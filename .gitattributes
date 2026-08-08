@@ -1,0 +1,8 @@
+# Saltos de línea normalizados: sin esto, un mismo archivo aparece
+# entero como modificado al pasar entre Windows y Linux.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.png binary
+*.jpg binary
+*.mp4 binary
+*.pt binary
