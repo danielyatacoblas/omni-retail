@@ -61,3 +61,6 @@ capturas_rostro/
 
 # Informes con datos de matrículas, entradas o personas
 data/reporte_*.csv
+
+# El perfil temporal que crea scripts/capturas.py para Chrome headless.
+scripts/_perfil_chrome/
