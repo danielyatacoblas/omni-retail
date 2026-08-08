@@ -193,7 +193,7 @@ directorio.
 
 ## Cómo se trabajó
 
-**21 commits**, **12 fusiones** y **5 etiquetas** (`v0.1.0`, `v0.2.0`, `v0.3.0`, `v0.4.0`, `v0.5.0`). al generar este bloque. Cada rama entra con `--no-ff`: un merge aplastado ahorra una línea y borra la única prueba de que aquello fue una tarea con principio y final.
+**29 commits**, **18 fusiones** y **5 etiquetas** (`v0.1.0`, `v0.2.0`, `v0.3.0`, `v0.4.0`, `v0.5.0`). al generar este bloque. Cada rama entra con `--no-ff`: un merge aplastado ahorra una línea y borra la única prueba de que aquello fue una tarea con principio y final.
 
 ```mermaid
 gitGraph
@@ -247,13 +247,35 @@ gitGraph
    merge feature/documented-metrics-and-thresholds
    checkout main
    merge develop
+   checkout develop
+   merge main
+   checkout develop
+   branch fix/version-badge-from-tag
+   checkout fix/version-badge-from-tag
+   commit
+   checkout develop
+   merge fix/version-badge-from-tag
+   checkout main
+   merge develop
+   checkout develop
+   merge main
+   checkout develop
+   branch docs/cover-image
+   checkout docs/cover-image
+   commit
+   checkout develop
+   merge docs/cover-image
+   checkout main
+   merge develop
 ```
 
 | Prefijo | Para qué | Ramas |
 |---|---|---|
-| `develop/` | rama de integración | 6 |
+| `develop/` | rama de integración | 8 |
 | `feature/` | trabajo acotado, se integra en develop | 5 |
-| `main/` | otros | 1 |
+| `main/` | otros | 3 |
+| `fix/` | un fallo concreto | 1 |
+| `docs/` | documentación, diagramas y capturas | 1 |
 
 | Rama | Responsabilidad | Regla de salida |
 |---|---|---|
