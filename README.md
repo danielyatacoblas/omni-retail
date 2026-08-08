@@ -17,12 +17,12 @@ del procesamiento (no simulados):
 
 ## 1. Instalar
 
-Este MVP **comparte el mismo Python global** que `first_mvp_ppe` (ya trae
+Este MVP **comparte el mismo Python global** que `omni-ppe` (ya trae
 **torch 2.5.1+cu121 con CUDA**, ultralytics y supervision), así no se re-descarga
 torch. Solo falta agregar `rfdetr`:
 
 ```bash
-cd first_mvp_tranking
+cd omni-retail
 pip install rfdetr            # arrastra supervision>=0.29; torch CUDA ya está
 ```
 
@@ -96,3 +96,18 @@ python run_video.py videos/market-square.mp4 --conf 0.35
 - Exportar RF-DETR a **ONNX/OpenVINO** e **INT8 (NNCF)** para 2 cámaras en paralelo,
   siguiendo el patrón ya probado en `vision-node` (`num_streams=2`, ByteTrack, zonas por cámara).
 - Migrar de archivo de video a **RTSP** en vivo reutilizando `vision-node/server`.
+
+## Pruebas
+
+```bash
+python -m pytest -q
+```
+
+`test_zones.py` cubre `zones.py`, que es donde un nombre que llega por HTTP
+acaba tocando el disco — la forma exacta que tiene un salto de directorio. Fija
+también que las zonas, guardadas en 0..1, sigan cayendo en el mismo sitio de la
+imagen al cambiar la resolución del frame: es toda la razón de no guardarlas en
+píxeles.
+
+<sub>OMNI Retail · ApexCorp — desarrollado por
+<a href="https://github.com/danielyatacoblas">Daniel Yataco Blas</a></sub>
