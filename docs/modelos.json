@@ -1,0 +1,75 @@
+[
+  {
+    "archivo": "yolo11n.pt",
+    "rol": "Personas — detector por defecto",
+    "umbral": 0.4,
+    "imgsz": 640,
+    "epochs": 600,
+    "dataset": "coco",
+    "licencia": "AGPL-3.0 License (https://ultralytics.com/license)",
+    "metricas": {
+      "precision": 0.6564,
+      "recall": 0.5025,
+      "mAP50": 0.5514,
+      "mAP50-95": 0.394
+    },
+    "parametros": 2624080,
+    "clases": 80,
+    "nombres": [
+      "person",
+      "bicycle",
+      "car",
+      "motorcycle",
+      "airplane",
+      "bus",
+      "train",
+      "truck"
+    ],
+    "video": "entradas.mp4",
+    "res": 640,
+    "dispositivo": "cuda",
+    "ms": 23.3,
+    "fps": 42.9,
+    "dets": 5.0,
+    "conf_media": 0.683,
+    "mejor_ms": 17.7,
+    "fuente": [
+      "Ultralytics · COCO 2017",
+      "https://docs.ultralytics.com/models/yolo11/"
+    ]
+  },
+  {
+    "archivo": "yolov8s-world.pt",
+    "rol": "Objetos de anaquel (vocabulario abierto)",
+    "umbral": 0.05,
+    "imgsz": 640,
+    "epochs": 100,
+    "dataset": null,
+    "licencia": "AGPL-3.0 License (https://ultralytics.com/license)",
+    "metricas": {},
+    "parametros": 13383496,
+    "clases": 80,
+    "nombres": [
+      "person",
+      "bicycle",
+      "car",
+      "motorcycle",
+      "airplane",
+      "bus",
+      "train",
+      "truck"
+    ],
+    "video": "_anaqueles.mp4",
+    "res": 640,
+    "dispositivo": "cuda",
+    "ms": 38.8,
+    "fps": 25.7,
+    "dets": 19.2,
+    "conf_media": 0.144,
+    "mejor_ms": 27.7,
+    "fuente": [
+      "Ultralytics YOLO-World",
+      "https://docs.ultralytics.com/models/yolo-world/"
+    ]
+  }
+]
