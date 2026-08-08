@@ -37,6 +37,20 @@ ninguna captura de este README.
 
 ## Cómo funciona
 
+<a href="docs/flujo.svg">
+  <img src="docs/flujo.svg" alt="Del video a la decisión" width="100%">
+</a>
+
+<sub>Ábrelo en grande: <a href="docs/flujo.svg"><code>docs/flujo.svg</code></a>.
+Las cifras de las tarjetas no están escritas a mano — las pone
+<a href="scripts/diagrama.py"><code>scripts/diagrama.py</code></a> leyendo
+<code>docs/modelos.json</code>, que a su vez genera
+<a href="scripts/medir_modelos.py"><code>scripts/medir_modelos.py</code></a>
+midiendo los modelos de verdad. Si mañana se cambia un modelo, se corren los
+dos y el dibujo se corrige solo.</sub>
+
+### El mismo recorrido, en corto
+
 ```mermaid
 flowchart LR
   V["Video .mp4"] --> P["Lector de fotogramas<br/>salta fotogramas para ir al día"]
@@ -59,17 +73,34 @@ Las zonas se guardan **normalizadas de 0 a 1**, no en píxeles. Así el mismo
 polígono cae en la misma parte de la imagen aunque el fotograma se reescale, y
 dibujarlas es cosa de una vez por cámara.
 
-### Los modelos, y por qué esos
+<!-- MODELOS:inicio -->
 
-| Modelo | Para qué | Por qué |
-|---|---|---|
-| **YOLO11n** | Personas | El más rápido que aún acierta. Por defecto |
-| **RF-DETR nano** | Personas | Más preciso con gente que se tapa entre sí; más lento |
-| **YOLO-World** | Objetos de anaquel | Vocabulario abierto: se le pide «bottle, box, can» sin reentrenar nada |
+### Los modelos, medidos
 
-El umbral de YOLO-World va deliberadamente bajo (`0.05`): un producto de
-estante puntúa poco, y lo que interesa no es *qué* producto es sino **cuánto
-hay**.
+| Modelo | Para qué | Entrada | Precisión | Recall | mAP@50 | mAP@50-95 |
+|---|---|---|---|---|---|---|
+| **`yolo11n.pt`** | Personas — detector por defecto | 640² | 65.6 % | 50.2 % | 55.1 % | 39.4 % |
+| **`yolov8s-world.pt`** | Objetos de anaquel (vocabulario abierto) | 640² | — | — | — | — |
+
+<sub>Estas cuatro columnas **no** se calculan aquí: salen del propio archivo `.pt`, donde Ultralytics guarda la validación del entrenamiento que produjo esos pesos. Son el acierto sobre el conjunto de validación de quien lo entrenó, **no** sobre los videos de este proyecto. Medir eso exigiría etiquetar a mano esta operación concreta, que es trabajo que un MVP todavía no ha hecho; dar un porcentaje inventado sería peor que no darlo. Comprobación de que la lectura es correcta: `yolo11n` sale con mAP@50-95 = 39,4 % y Ultralytics publica 39,5 % para ese modelo en COCO.</sub>
+
+### De dónde sale cada modelo
+
+| Modelo | Entrenado sobre | Épocas | Resolución | Origen |
+|---|---|---|---|---|
+| **`yolo11n.pt`** | `coco` | 600 | 640×640 | [Ultralytics · COCO 2017](https://docs.ultralytics.com/models/yolo11/) |
+| **`yolov8s-world.pt`** | `—` | 100 | 640×640 | [Ultralytics YOLO-World](https://docs.ultralytics.com/models/yolo-world/) |
+
+<sub>El conjunto, las épocas y la resolución salen de `train_args`, que Ultralytics guarda dentro del propio `.pt`. Es decir: no es lo que dice la documentación del modelo, es lo que quedó grabado en el archivo que este repositorio usa de verdad. Los nombres de conjunto son los del disco de quien entrenó —`retrain_data`, `safe_human`— porque es literalmente lo que hay dentro.</sub>
+
+| Modelo | Parámetros | Clases | Latencia (mejor) | Latencia (mediana) | Det./fotograma | Confianza media |
+|---|---|---|---|---|---|---|
+| **`yolo11n.pt`** | 2.6 M | 80 | 17.7 ms · 56 fps | 23.3 ms · 42.9 fps | 5.0 | 0.683 |
+| **`yolov8s-world.pt`** | 13.4 M | 80 | 27.7 ms · 36 fps | 38.8 ms · 25.7 fps | 19.2 | 0.144 |
+
+<sub>Esto sí se mide aquí, con <a href="scripts/medir_modelos.py"><code>scripts/medir_modelos.py</code></a>, sobre fotogramas reales de los videos del repositorio, en una RTX 3060 Laptop y a la resolución que usa la aplicación. Sesenta fotogramas, descartando los veinte primeros.<br>Se dan <b>dos</b> latencias a propósito. Esta GPU está a 210 MHz en reposo y tarda segundos en subir de reloj, así que la mediana se mueve bastante entre pasadas —el mismo <code>yolo11n</code> ha dado 20 y 48 fps— mientras que el mejor caso es estable y representa lo que la máquina puede sostener. Dar solo la cifra buena sería vender de más; dar solo la mediana, castigar al modelo por la gestión de energía del portátil.</sub>
+
+<!-- MODELOS:fin -->
 
 ## Probarlo
 
