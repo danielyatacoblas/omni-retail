@@ -15,6 +15,10 @@ import cv2
 import numpy as np
 import supervision as sv
 
+# Antes que nada: sin esto LineZone mata el hilo de procesamiento en
+# cuanto alguien cruza la línea. Ver backend/compat.py.
+from . import compat  # noqa: F401
+
 from .config import config
 from .zones import line_to_px, zone_to_px
 

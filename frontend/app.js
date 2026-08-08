@@ -51,7 +51,8 @@ const st = { usecase:'conteo', video:null, tool:null, line:null, zones:[], draft
 (async function init(){
   hydrateIcons();
   const d = await api('/api/videos');
-  $('devicePill').textContent = `${d.variant} · ${d.device}`;
+  const detAct = (d.detectors||[]).find(x=>x.kind===d.default_detector);
+  $('devicePill').textContent = `${detAct ? detAct.label.split(' · ')[0] : 'modelo'} · ${d.device}`;
   $('kCap').textContent = 'Dentro · aforo ' + d.store_capacity;
   const sel = $('videoSelect');
   sel.innerHTML = d.videos.length
