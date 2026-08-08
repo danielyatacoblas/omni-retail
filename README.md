@@ -7,7 +7,9 @@
 > ![pruebas](https://img.shields.io/badge/pruebas-19%20pasando-129A6B)
 > ![licencia](https://img.shields.io/badge/uso-interno%20ApexCorp-E19100)
 
-![OMNI Retail en marcha](docs/capturas/01-conteo.png)
+<p align="center">
+  <img src="docs/portada.svg" alt="OMNI Retail: del video de la cámara a la decisión del día" width="100%">
+</p>
 
 ## El problema
 
