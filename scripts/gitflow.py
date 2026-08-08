@@ -70,6 +70,11 @@ def diagrama(lista: list, etiquetas: list) -> str:
     return "\n".join(filas)
 
 
+def _orden(t: str):
+    """v0.10.0 va DESPUÉS de v0.9.0, que ordenado como texto sería al revés."""
+    return [int(x) for x in t.lstrip("v").split(".") if x.isdigit()]
+
+
 def main() -> int:
     todas = ramas()
     if not todas:
@@ -124,6 +129,14 @@ def main() -> int:
     bloque = "\n".join(partes)
 
     texto = README.read_text(encoding="utf-8")
+
+    # La insignia de versión salía escrita a mano y se quedó en v0.3.0 con el
+    # repositorio ya en la v0.5.0. Ahora sale de la última etiqueta, que es la
+    # única fuente que no se puede olvidar de actualizar.
+    if etiquetas:
+        ultima = sorted(etiquetas, key=_orden)[-1]
+        texto = re.sub(r"(badge/versi\u00f3n-)v[0-9.]+(-)",
+                       lambda m: m.group(1) + ultima + m.group(2), texto)
     nuevo = f"{INICIO}\n\n{bloque}\n{FIN}"
     if INICIO in texto:
         texto = re.sub(re.escape(INICIO) + r".*?" + re.escape(FIN),
