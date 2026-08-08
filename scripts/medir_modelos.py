@@ -189,37 +189,121 @@ def medir(ruta: Path, video: Path, conf: float) -> dict:
     return salida
 
 
+# Métricas que el modelo publica en su documentación, para los .pt que no
+# las guardaron dentro. Con la fuente exacta donde se comprueban.
+DOCUMENTADO = {
+    "yolov8s-world.pt": dict(
+        metricas={"mAP50": 0.52, "mAP50-95": 0.374},
+        nota="transferencia sin entrenamiento (zero-shot) sobre COCO",
+        url="https://docs.ultralytics.com/models/yolo-world/"),
+    "face_yolov8s.pt": dict(
+        metricas={"mAP50": 0.713, "mAP50-95": 0.404},
+        nota="rostro realista · WIDER FACE y otros",
+        url="https://huggingface.co/Bingsu/adetailer"),
+    "forklift_kerem.pt": dict(
+        metricas={"mAP50": 0.846},
+        nota="2 clases: montacargas y persona",
+        url="https://huggingface.co/keremberke/yolov8m-forklift-detection"),
+}
+
+# (etiqueta, valor, por qué es ese y no otro)
+UMBRALES = [
+    ("Confianza · personas", "0.40",
+     "Cámara fija y gente de cuerpo entero: el modelo está seguro. Bajarlo solo mete cajas dobles que luego el seguimiento tiene que deshacer."),
+    ("Confianza · anaquel", "0.05",
+     "Un producto de estante puntúa poquísimo. Aquí no importa QUÉ producto es sino CUÁNTO hay, así que se recoge de más a propósito."),
+    ("IoU de NMS", "0.60",
+     "Funde las cajas dobles sobre la misma persona. Más alto y una persona se cuenta dos veces; más bajo y dos personas juntas se funden en una."),
+    ("Activación de ByteTrack", "0.35",
+     "Por debajo de la confianza de detección: el seguidor puede sostener un ID con evidencia más floja de la que hizo falta para crearlo."),
+    ("Fotogramas para dar un cruce", "5",
+     "La persona tiene que quedarse al otro lado. Sin esto, el temblor de una caja sobre la línea cuenta como entrar y salir sin parar."),
+]
+
+
+def _completar(f: dict) -> str:
+    """Rellena con lo publicado lo que el checkpoint no guardó.
+
+    Devuelve de dónde sale la cifra, que es tan importante como la cifra:
+    «checkpoint» es la validación del propio entrenamiento que produjo este
+    archivo; «documentación» es lo que publica su autor y aquí solo se cita.
+    """
+    if f["metricas"]:
+        return "checkpoint"
+    doc = DOCUMENTADO.get(f["archivo"])
+    if not doc:
+        return "no publicado"
+    f["metricas"] = dict(doc["metricas"])
+    f["nota_doc"] = doc["nota"]
+    f["url_doc"] = doc["url"]
+    return "documentación"
+
+
+def tabla_umbrales() -> str:
+    if not UMBRALES:
+        return ""
+    out = ["### Los umbrales que usa este proyecto", "",
+           "Una cifra de mAP sin el umbral al que se trabaja no dice nada: el "
+           "mismo modelo a 0.05 y a 0.50 se comporta como dos modelos "
+           "distintos. Estos son los valores por defecto, todos cambiables "
+           "por variable de entorno sin tocar código.", "",
+           "| Umbral | Valor | Por qué ese y no otro |", "|---|---|---|"]
+    for et, val, pq in UMBRALES:
+        out.append(f"| {et} | **`{val}`** | {pq} |")
+    out.append("")
+    return "\n".join(out)
+
+
 def tabla(filas: list) -> str:
     def pct(v):
         return f"{v * 100:.1f} %" if isinstance(v, (int, float)) else "—"
 
+    # ── acierto ─────────────────────────────────────────────────────────────
     out = [
-        "### Los modelos, medidos",
+        "### Qué tan bien detecta cada modelo",
         "",
-        "| Modelo | Para qué | Entrada | Precisión | Recall | mAP@50 | mAP@50-95 |",
+        "| Modelo | Para qué | Precisión | Recall | mAP@50 | mAP@50-95 "
+        "| La cifra sale de |",
         "|---|---|---|---|---|---|---|",
     ]
     for f in filas:
+        origen = _completar(f)
         m = f["metricas"]
-        entrada = f"{f['imgsz']}²" if f.get("imgsz") else "—"
+        if origen == "documentación" and f.get("url_doc"):
+            org = (f"[su documentación]({f['url_doc']})<br>"
+                   f"<sub>{f.get('nota_doc', '')}</sub>")
+        elif origen == "checkpoint":
+            org = "el propio `.pt`"
+        else:
+            org = "**no publicado**"
         out.append(
-            f"| **`{f['archivo']}`** | {f['rol']} | {entrada} "
+            f"| **`{f['archivo']}`** | {f['rol']} "
             f"| {pct(m.get('precision'))} | {pct(m.get('recall'))} "
-            f"| {pct(m.get('mAP50'))} | {pct(m.get('mAP50-95'))} |")
+            f"| {pct(m.get('mAP50'))} | {pct(m.get('mAP50-95'))} | {org} |")
 
     out += [
         "",
-        "<sub>Estas cuatro columnas **no** se calculan aquí: salen del propio "
-        "archivo `.pt`, donde Ultralytics guarda la validación del "
-        "entrenamiento que produjo esos pesos. Son el acierto sobre el "
-        "conjunto de validación de quien lo entrenó, **no** sobre los videos "
-        "de este proyecto. Medir eso exigiría etiquetar a mano esta operación "
-        "concreta, que es trabajo que un MVP todavía no ha hecho; dar un "
-        "porcentaje inventado sería peor que no darlo. "
-        "Comprobación de que la lectura es correcta: `yolo11n` sale con "
+        "<sub>Ninguna de estas cifras se calcula aquí, y la última columna "
+        "dice cuál es cuál. <b>El propio <code>.pt</code></b>: Ultralytics "
+        "guardó dentro del archivo la validación del entrenamiento que lo "
+        "produjo, así que es el acierto que midió quien lo entrenó sobre "
+        "<i>su</i> conjunto. <b>Su documentación</b>: ese archivo no guardó "
+        "métricas, y se cita lo que publica su autor con enlace para "
+        "comprobarlo. <b>No publicado</b>: no hay cifra en ninguna parte, y "
+        "se dice en vez de rellenar el hueco.<br>"
+        "En los tres casos son cifras sobre el conjunto de validación de "
+        "quien entrenó, <b>no</b> sobre los videos de este proyecto. Medir "
+        "eso exigiría etiquetar a mano esta operación concreta, que es "
+        "trabajo que un MVP todavía no ha hecho; un porcentaje inventado "
+        "sería peor que ninguno. Comprobación de que la lectura del "
+        "<code>.pt</code> es correcta: <code>yolo11n</code> sale con "
         "mAP@50-95 = 39,4 % y Ultralytics publica 39,5 % para ese modelo en "
         "COCO.</sub>",
         "",
+    ]
+
+    # ── procedencia ─────────────────────────────────────────────────────────
+    out += [
         "### De dónde sale cada modelo",
         "",
         "| Modelo | Entrenado sobre | Épocas | Resolución | Origen |",
@@ -240,26 +324,33 @@ def tabla(filas: list) -> str:
 
     out += [
         "",
-        "<sub>El conjunto, las épocas y la resolución salen de `train_args`, "
-        "que Ultralytics guarda dentro del propio `.pt`. Es decir: no es lo "
-        "que dice la documentación del modelo, es lo que quedó grabado en el "
-        "archivo que este repositorio usa de verdad. Los nombres de conjunto "
-        "son los del disco de quien entrenó —`retrain_data`, `safe_human`— "
-        "porque es literalmente lo que hay dentro.</sub>",
+        "<sub>El conjunto, las épocas y la resolución salen de "
+        "<code>train_args</code>, que Ultralytics guarda dentro del propio "
+        "<code>.pt</code>. Es decir: no es lo que dice la ficha del modelo, es "
+        "lo que quedó grabado en el archivo que este repositorio carga de "
+        "verdad. Los nombres de conjunto son los del disco de quien entrenó "
+        "—<code>retrain_data</code>, <code>safe_human</code>— porque es "
+        "literalmente lo que hay dentro.</sub>",
+        "",
+    ]
+
+    # ── velocidad ───────────────────────────────────────────────────────────
+    out += [
+        "### Cuánto tarda cada uno, medido aquí",
         "",
         "| Modelo | Parámetros | Clases | Latencia (mejor) | Latencia (mediana) "
-        "| Det./fotograma | Confianza media |",
-        "|---|---|---|---|---|---|---|",
+        "| Umbral | Det./fotograma | Confianza media |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for f in filas:
         mej = (f"{f['mejor_ms']} ms · {1000 / f['mejor_ms']:.0f} fps"
                if f.get("mejor_ms") else "—")
-        med = (f"{f['ms']} ms · {f['fps']} fps" if f.get("ms") else "—")
+        med = f"{f['ms']} ms · {f['fps']} fps" if f.get("ms") else "—"
         det = f"{f['dets']}" if f.get("dets") is not None else "—"
         cm = f"{f['conf_media']}" if f.get("conf_media") else "—"
         par = f"{f['parametros'] / 1e6:.1f} M" if f.get("parametros") else "—"
         out.append(f"| **`{f['archivo']}`** | {par} | {f['clases']} "
-                   f"| {mej} | {med} | {det} | {cm} |")
+                   f"| {mej} | {med} | `{f['umbral']:.2f}` | {det} | {cm} |")
 
     out += [
         "",
@@ -267,7 +358,13 @@ def tabla(filas: list) -> str:
         "<a href=\"scripts/medir_modelos.py\"><code>scripts/medir_modelos.py"
         "</code></a>, sobre fotogramas reales de los videos del repositorio, "
         "en una RTX 3060 Laptop y a la resolución que usa la aplicación. "
-        "Sesenta fotogramas, descartando los veinte primeros.<br>"
+        "Sesenta fotogramas, descartando los veinte primeros. "
+        "El umbral es el que usa la aplicación, y va en la tabla porque "
+        "«det./fotograma» no significa nada sin él: el mismo modelo a 0.05 y "
+        "a 0.50 devuelve cantidades incomparables. «Confianza media» es la "
+        "media de la puntuación de lo que pasó ese umbral — no es acierto, "
+        "pero dice si el modelo trabaja cómodo o al límite en este "
+        "material.<br>"
         "Se dan <b>dos</b> latencias a propósito. Esta GPU está a 210 MHz en "
         "reposo y tarda segundos en subir de reloj, así que la mediana se "
         "mueve bastante entre pasadas —el mismo <code>yolo11n</code> ha dado "
@@ -276,6 +373,7 @@ def tabla(filas: list) -> str:
         "de más; dar solo la mediana, castigar al modelo por la gestión de "
         "energía del portátil.</sub>",
         "",
+        tabla_umbrales(),
     ]
     return "\n".join(out)
 

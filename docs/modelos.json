@@ -28,11 +28,11 @@
     "video": "entradas.mp4",
     "res": 640,
     "dispositivo": "cuda",
-    "ms": 23.3,
-    "fps": 42.9,
+    "ms": 22.5,
+    "fps": 44.5,
     "dets": 5.0,
     "conf_media": 0.683,
-    "mejor_ms": 17.7,
+    "mejor_ms": 18.4,
     "fuente": [
       "Ultralytics · COCO 2017",
       "https://docs.ultralytics.com/models/yolo11/"
@@ -62,11 +62,11 @@
     "video": "_anaqueles.mp4",
     "res": 640,
     "dispositivo": "cuda",
-    "ms": 38.8,
-    "fps": 25.7,
+    "ms": 40.5,
+    "fps": 24.7,
     "dets": 19.2,
     "conf_media": 0.144,
-    "mejor_ms": 27.7,
+    "mejor_ms": 26.3,
     "fuente": [
       "Ultralytics YOLO-World",
       "https://docs.ultralytics.com/models/yolo-world/"
