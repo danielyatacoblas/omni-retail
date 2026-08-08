@@ -1,0 +1,30 @@
+{
+  "line": null,
+  "zones": [
+    {
+      "id": "z1",
+      "name": "Caja 1",
+      "type": "permanencia",
+      "color": "#2D6CDF",
+      "points": [
+        [
+          0.3,
+          0.3
+        ],
+        [
+          0.75,
+          0.3
+        ],
+        [
+          0.75,
+          0.85
+        ],
+        [
+          0.3,
+          0.85
+        ]
+      ]
+    }
+  ],
+  "video": "tiempo_en_caja.mp4"
+}

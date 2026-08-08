@@ -1,0 +1,19 @@
+# --- Núcleo de visión / tracking ---
+rfdetr>=1.8.0            # detector RF-DETR (Roboflow) — personas
+supervision>=0.22.0,<0.30  # ByteTrack, LineZone, PolygonZone, assets de video
+opencv-python>=4.10.0
+numpy>=1.26.0
+
+# --- Backend / streaming ---
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+python-dotenv>=1.0.0
+python-multipart>=0.0.9
+
+# NOTA (GPU RTX 3060 / CUDA):
+# 'rfdetr' arrastra torch CPU por defecto. Para usar la GPU instala primero:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+# y luego: pip install -r requirements.txt
+#
+# NOTA (Intel N100 / edge): usar DEVICE=cpu en .env. Para máx. rendimiento se
+# recomienda exportar RF-DETR a ONNX/OpenVINO e INT8 (NNCF) — ver README.

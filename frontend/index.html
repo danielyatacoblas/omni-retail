@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OMNI Retail — ApexCorp</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- HEADER -->
+    <header class="hdr">
+      <div class="brand">
+        <div class="logo">A<span>◢</span></div>
+        <div>
+          <div class="brand-title">OMNI&nbsp;Retail <span class="ver">MVP</span></div>
+          <div class="brand-sub">ApexCorp&nbsp;S.A.C. · Analítica de video para retail</div>
+        </div>
+      </div>
+      <div class="hdr-meta">
+        <span class="pill live"><span id="liveDot" class="dot off"></span><span id="liveTxt">En espera</span></span>
+        <span class="pill"><i data-ico="cpu"></i><span id="devicePill">—</span></span>
+        <span class="pill hide-sm"><i data-ico="clock"></i><span id="clock">—</span></span>
+      </div>
+    </header>
+
+    <!-- USE-CASE SELECTOR -->
+    <nav class="usecases" id="usecases">
+      <button class="uc active" data-uc="conteo">
+        <span class="uc-n">01</span>
+        <span class="uc-ico"><i data-ico="eye"></i></span>
+        <span class="uc-tx"><b>Conteo de personas</b><small>Línea de entrada / salida</small></span>
+      </button>
+      <button class="uc" data-uc="permanencia">
+        <span class="uc-n">02</span>
+        <span class="uc-ico"><i data-ico="timer"></i></span>
+        <span class="uc-tx"><b>Permanencia por zona</b><small>Tiempo real por área</small></span>
+      </button>
+      <button class="uc" data-uc="anaqueles">
+        <span class="uc-n">03</span>
+        <span class="uc-ico"><i data-ico="package"></i></span>
+        <span class="uc-tx"><b>Nivel de anaquel</b><small>Llenado por región</small></span>
+      </button>
+    </nav>
+
+    <!-- WORKSPACE -->
+    <div class="workspace">
+      <!-- MAIN: VISOR -->
+      <section class="visor">
+        <!-- steps -->
+        <div class="steps">
+          <div class="step" data-step="1"><span class="s-n">1</span><span>Elige un video</span></div>
+          <div class="step-sep"></div>
+          <div class="step" data-step="2"><span class="s-n">2</span><span id="stepCfgTxt">Dibuja la línea</span></div>
+          <div class="step-sep"></div>
+          <div class="step" data-step="3"><span class="s-n">3</span><span>Procesar</span></div>
+        </div>
+
+        <!-- toolbar -->
+        <div class="toolbar">
+          <div class="select-wrap"><i data-ico="film"></i>
+            <select id="videoSelect" class="sel"></select>
+          </div>
+          <div class="select-wrap"><i data-ico="cpu"></i>
+            <select id="detectorSelect" class="sel" title="Modelo de detección"></select>
+          </div>
+          <button id="drawBtn" class="btn tool"><i data-ico="scan"></i><span id="drawLbl">Dibujar línea</span></button>
+          <button id="undoBtn" class="btn tool icon-only" title="Deshacer"><i data-ico="undo"></i></button>
+          <button id="clearBtn" class="btn tool icon-only" title="Borrar configuración"><i data-ico="trash"></i></button>
+          <div class="tb-spacer"></div>
+          <button id="startBtn" class="btn primary"><i data-ico="play"></i>Procesar</button>
+          <button id="stopBtn" class="btn ghost" disabled><i data-ico="stop"></i>Detener</button>
+        </div>
+
+        <!-- viewport -->
+        <div class="viewport" id="viewport">
+          <img id="frameImg" class="layer" alt="frame" />
+          <img id="stream" class="layer" alt="stream" style="display:none" />
+          <canvas id="editor" class="layer editor"></canvas>
+          <div id="hint" class="draw-hint" style="display:none"></div>
+          <div id="placeholder" class="placeholder">
+            <i data-ico="mouse-pointer"></i>
+            <div>Elige un video y dibuja tu <b id="phCfg">línea de conteo</b></div>
+          </div>
+          <div class="vp-badge" id="vpBadge"><i data-ico="route"></i><span id="vpBadgeTxt">Vista previa</span></div>
+          <div id="procOverlay" class="proc-overlay" style="display:none">
+            <div class="spin"></div>
+            <span id="procTxt">Cargando modelo…</span>
+            <small>RF-DETR inicializando · unos segundos</small>
+          </div>
+        </div>
+        <div class="progress"><div id="progressBar"></div></div>
+
+        <div class="zonebar">
+          <span class="zb-label"><i data-ico="layers"></i>Configuración</span>
+          <span id="zoneChips"></span>
+          <span id="noZones" class="zb-empty">nada definido — usa “Dibujar”</span>
+        </div>
+      </section>
+
+      <!-- SIDE: ANALÍTICA -->
+      <aside class="analytics">
+        <div class="a-head"><span class="a-kick">✦ Analítica</span><h2 id="ucTitle">Conteo de personas</h2></div>
+
+        <div class="kpis" id="kpis">
+          <div class="kpi"><span class="kpi-ico blue"><i data-ico="users"></i></span><div><div class="kpi-v" id="kUnique">0</div><div class="kpi-l">Personas únicas</div></div></div>
+          <div class="kpi"><span class="kpi-ico green"><i data-ico="login"></i></span><div><div class="kpi-v" id="kIn">0</div><div class="kpi-l">Ingresos</div></div></div>
+          <div class="kpi"><span class="kpi-ico orange"><i data-ico="user-check"></i></span><div><div class="kpi-v" id="kInside">0</div><div class="kpi-l" id="kCap">Dentro · aforo 50</div></div></div>
+          <div class="kpi"><span class="kpi-ico amber"><i data-ico="timer"></i></span><div><div class="kpi-v" id="kDwell">0s</div><div class="kpi-l">Permanencia prom.</div></div></div>
+        </div>
+
+        <!-- CONTEO -->
+        <div class="card mod-panel" data-mod="conteo">
+          <div class="card-t"><i data-ico="activity"></i>Flujo durante el video</div>
+          <div class="chart-wrap"><canvas id="flowChart"></canvas></div>
+          <div class="legend"><span><i class="lg" style="background:#6FA80C"></i>Dentro</span><span><i class="lg" style="background:#2D6CDF"></i>Ingresos</span><span><i class="lg" style="background:#E19100"></i>Salidas</span><span><i class="lg dash"></i>Aforo</span></div>
+          <div class="io-row">
+            <div class="io in"><span>Ingresos</span><b id="ioIn">0</b></div>
+            <div class="io out"><span>Salidas</span><b id="ioOut">0</b></div>
+            <div class="io peak"><span>Pico</span><b id="ioPeak">0</b></div>
+          </div>
+        </div>
+
+        <!-- PERMANENCIA -->
+        <div class="card mod-panel" data-mod="permanencia" style="display:none">
+          <div class="card-t"><i data-ico="timer"></i>Permanencia por zona</div>
+          <div id="dwellTable" class="dwell"></div>
+        </div>
+
+        <!-- ANAQUELES -->
+        <div class="card mod-panel" data-mod="anaqueles" style="display:none">
+          <div class="card-t"><i data-ico="package"></i>Nivel de anaqueles <span class="exp">experimental</span></div>
+          <div id="shelfBars" class="shelves"></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- BOTTOM: personas + alertas -->
+    <div class="bottom">
+      <section class="people-strip">
+        <div class="ps-head">
+          <span><i data-ico="users"></i>Personas activas <b id="activeCount">0</b></span>
+          <span class="ps-sub"><i data-ico="route"></i>trazabilidad en vivo</span>
+        </div>
+        <div class="ps-list" id="activePeople"><div class="ps-empty">Sin personas en cuadro todavía.</div></div>
+      </section>
+
+      <section class="alerts">
+        <div class="alerts-hd">
+          <div class="alerts-t"><i data-ico="alert"></i>Alertas <span id="alertCount" class="badge-n">0</span></div>
+          <button id="exportBtn" class="btn ghost sm"><i data-ico="download"></i>CSV</button>
+        </div>
+        <div class="alerts-body">
+          <table><thead><tr><th>Tiempo</th><th>Módulo</th><th>Alerta</th><th class="hide-sm">Detalle</th></tr></thead>
+          <tbody id="alertRows"></tbody></table>
+          <div id="noAlerts" class="zb-empty" style="padding:12px">Sin alertas todavía.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+# ── Lo que no entra al repositorio ──────────────────────────────────────
+#
+# Los pesos y los vídeos no son código: son entrada y salida. Metidos aquí,
+# clonar el proyecto pasaría de segundos a minutos y GitHub rechaza cualquier
+# archivo de más de 100 MB. Los modelos se recuperan con `download_models.py`,
+# que sí está versionado.
+
+# Modelos y pesos
+weights/
+*.pt
+*.onnx
+*.engine
+*.pth
+
+# Vídeos de entrada y resultados del procesamiento
+videos/
+outputs/
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Entorno y credenciales: nunca
+.env
+.env.*
+*.token
+.envtoken
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Datos personales: NUNCA ────────────────────────────────────────────
+#
+# Los recortes de rostro que produce el sistema son datos biométricos de
+# personas reales que no dieron su consentimiento — en OMNI Guard salen de
+# vídeo de calle. Publicarlos en un repositorio abierto no es un descuido de
+# tamaño, es exponer a gente identificable, y en Perú lo cubre la Ley 29733 de
+# protección de datos personales.
+#
+# El código que los genera sí se versiona; las caras no.
+data/rostros/
+data/faces/
+data/personas/
+recortes/
+capturas_rostro/
+
+# Informes con datos de matrículas, entradas o personas
+data/reporte_*.csv
