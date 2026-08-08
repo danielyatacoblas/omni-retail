@@ -87,7 +87,8 @@ def main() -> int:
         "",
         f"**{commits} commits**, **{len(todas)} fusiones** y "
         f"**{len(etiquetas)} etiquetas** ({', '.join(f'`{t}`' for t in etiquetas)}). "
-        "Cada rama entra con `--no-ff`: un merge aplastado ahorra una línea y "
+        "al generar este bloque. Cada rama entra con `--no-ff`: un merge "
+        "aplastado ahorra una línea y "
         "borra la única prueba de que aquello fue una tarea con principio y "
         "final.",
         "",
