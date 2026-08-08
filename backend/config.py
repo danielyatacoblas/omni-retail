@@ -28,7 +28,7 @@ class Config:
     yolo_model: str = os.getenv("YOLO_MODEL", "weights/yolo11n.pt")
     yolo_world_model: str = os.getenv(
         "YOLO_WORLD_MODEL",
-        r"C:/Users/USER/Desktop/ACCESORIO/Pixel-Civik/vision-node/server/shoplifting/yolov8s-world.pt")
+        "weights/yolov8s-world.pt")
     # clases open-vocabulary para YOLO-World (objetos comunes de retail); editable
     world_classes: list = field(default_factory=lambda: [
         c.strip() for c in os.getenv(
